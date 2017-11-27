@@ -18,22 +18,28 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 # parameters: min_uid
+[ -z "$1" ] && {
+	echo USAGE: $0 min_uid
+	exit 1
+}
 echo -e "---\n- hosts: localhost"
 echo -e "  vars:\n    grupos:"
 awk -F: '
 ARGIND==1{P[$1]=$2;next}
 ARGIND==2{
-	printf"      %s:\n",$1
-	printf"        gid: %s\n",$3
-	GN[$3]=$1;
-	if($4){split($4,U,/,/)
-	for(i in U){if(GS[U[i]]!=""){GS[U[i]]=GS[U[i]]","$1}else{GS[U[i]]=$1}}}
+	if($3>='$1'){
+		printf"      %s:\n",$1
+		printf"        gid: %s\n",$3
+		GN[$3]=$1;
+		if($4){split($4,U,/,/)
+		for(i in U){if(GS[U[i]]!=""){GS[U[i]]=GS[U[i]]","$1}else{GS[U[i]]=$1}}}
+	}
 	next}
 USERS!="si"{print "    usuarios:";USERS="si"}
 $3>65000{next}
 $3>='$1'{
 	printf"      %s:\n",$1
-	if($5)printf"        comment: %s\n",$5
+	if($5)printf"        comment: \042%s\042\n",$5
 	printf"        uid: %s\n",$3
 	printf"        group: %s\n",GN[$4]
 	printf"        home: %s\n",$6
@@ -41,7 +47,7 @@ $3>='$1'{
 	printf"        password: \042%s\042\n",P[$1]
 	if(GS[$1])printf"        groups: %s\n",GS[$1]
 	printf"        archivos:\n"
-	system("for i in ~"$1"/.ssh/*;do echo \042          - arch:\042;echo \042              fn: $i\042;echo \042              fc: |\042;sed \047s/^/                /\047 $i;done")
+	system("for i in ~"$1"/.ssh/*;do if test -f $i;then echo \042          - arch:\042;echo \042              fn: $i\042;echo \042              fc: |\042;sed \047s/^/                /\047 $i;fi;done")
 	
 }END{
 print "  tasks:\n\
