@@ -27,7 +27,7 @@ echo -e "  vars:\n    grupos:"
 awk -F: '
 ARGIND==1{P[$1]=$2;next}
 ARGIND==2{
-	if($3>='$1'){
+	if($3>='$1'&&$3<65000){
 		printf"      %s:\n",$1
 		printf"        gid: %s\n",$3
 		GN[$3]=$1;
